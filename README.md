@@ -3,7 +3,7 @@
 
 For that first need to install **Kubernetes** plugin ((https://plugins.jenkins.io/kubernetes/)) for Jenkins, it helps to run agents in the Kubernetes cluster. Install the plugin from Manage Jenkins -> Manage Plugins.
 
-Lets Check how to setting up the Jenkins agent.
+#### Lets Check how to setting up the Jenkins agent.
 
 **Create Secret credentials set for the Jenkins master to access the Kubernetes cluster.**
   1. In the Jenkins UI, click the Credentials link in the left-hand navigation panel
@@ -26,7 +26,7 @@ This allows the Jenkins master to use a Kubernetes service account to access the
      * Jenkins URL: http://<your_jenkins_hostname>
      * Jenkins tunnel: <jenkins_service>:50000 - This is the port that is used to communicate with an agent.
   
-Refer the Image: cloud-configuration
+Refer the Image: cloud-configuration.JPG
  
 To test this connection is successful you can use the Test Connection button to ensure there is proper communication from Jenkins to the Kubernetes cluster. These parameters are using to launch an agent in the K8s cluster. You can certainly modify other parameters to tweak your environment.
  
@@ -52,25 +52,29 @@ There are at least two ways to configure pod templates – in the **Jenkins UI**
       * Arguments to pass to the command:
       * Allocate pseudo-TTY: yes
  
- Refer the Image: pod-template-configuration
+ Refer the Image: pod-template-configuration.JPG
  
- Create a Jenkins pieline and build with the below code, it will create the slave pod and echo hello
-
+ Create a Jenkins pieline and build with the below code.
+```
  node('jenkins-slave') {
     
      stage('Run shell') {
         echo "Hello World"
     }
 }
- 
- It will create the slave pod with prefix ‘jenkins-slave’. Once the build complated it terminate the slave pods.
+ ```
+ It will create the slave pod with prefix ‘jenkins-slave’. Once the build completes, the Jenkins slave get removed from the cluster
  You can see the echo "Hello World" in the build output.
+ 
  
 **Configure a Pod Template with Pipeline script** 
 
 Any of the configuration parameters available in the UI or in the YAML definition can be added to the podTemplate and containerTemplate sections.
 Nodes can be defined in a pipeline and then used, however, default execution always goes to the jnlp container. You will need to specify the container you want to execute your task in. 
-The default jnlp agent image used can be customized by adding it to the template
+The default jnlp agent image used can be customized by adding it to the template.
+```
+containerTemplate(name: 'jnlp', image: 'jenkins/jnlp-slave:3.10-1-alpine', args: '${computer.jnlpmac} ${computer.name}'),
+```
 
 Please note the POD_LABEL is a new feature to automatically label the generated pod in versions 1.17.0 or higher, older versions of the Kubernetes Plugin will need to manually label the podTemplate
 
@@ -84,7 +88,7 @@ podTemplate {
     }
 }
 ```
-In the example below, I’ve defined a pod with two container templates. Ports in each container can be accessed as in any Kubernetes pod, by using localhost.
+In the example below, defined a pod with two container templates. Ports in each container can be accessed as in any Kubernetes pod, by using localhost.
 The container statement allows to execute commands directly into each container.
 
 ```
