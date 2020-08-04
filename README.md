@@ -1,4 +1,4 @@
-##How to run Jenkins-slaves pods in kubernetes cluster.
+## How to run Jenkins-slaves pods in kubernetes cluster.
 
 
 For that first need to install **Kubernetes** plugin ((https://plugins.jenkins.io/kubernetes/)) for Jenkins, it helps to run agents in the Kubernetes cluster. Install the plugin from Manage Jenkins -> Manage Plugins.
@@ -25,7 +25,8 @@ This allows the Jenkins master to use a Kubernetes service account to access the
      * Credentials: Select the Kubernetes Service Account credentials you created in the previous step
      * Jenkins URL: http://<your_jenkins_hostname>
      * Jenkins tunnel: <jenkins_service>:50000 - This is the port that is used to communicate with an agent.
-Refer the Image:
+  
+Refer the Image: cloud-configuration
  
 To test this connection is successful you can use the Test Connection button to ensure there is proper communication from Jenkins to the Kubernetes cluster. These parameters are using to launch an agent in the K8s cluster. You can certainly modify other parameters to tweak your environment.
  
@@ -51,14 +52,19 @@ There are at least two ways to configure pod templates – in the **Jenkins UI**
       * Arguments to pass to the command:
       * Allocate pseudo-TTY: yes
  
- Refer the Image:
+ Refer the Image: pod-template-configuration
  
+ Create a Jenkins pieline and build with the below code, it will create the slave pod and echo hello
+
  node('jenkins-slave') {
     
      stage('Run shell') {
         echo "Hello World"
     }
 }
+ 
+ It will create the slave pod with prefix ‘jenkins-slave’. Once the build complated it terminate the slave pods.
+ You can see the echo "Hello World" in the build output.
  
 **Configure a Pod Template with Pipeline script** 
 
