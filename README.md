@@ -1,4 +1,4 @@
-Lets Check how to run Jenkins-slaves in kubernetes cluster.
+##How to run Jenkins-slaves pods in kubernetes cluster.
 
 
 For that first need to install **Kubernetes** plugin ((https://plugins.jenkins.io/kubernetes/)) for Jenkins, it helps to run agents in the Kubernetes cluster. Install the plugin from Manage Jenkins -> Manage Plugins.
