@@ -21,7 +21,7 @@ This allows the Jenkins master to use a Kubernetes service account to access the
   1. In the Jenkins UI, go to Manage Jenkins → Configure System -> Cloud -> Kubernetes
   2. Update the following parameters:
      * Name: <your choice> - This defaults to kubernetes
-     * Kubernetes URL: https://kubernetes.default - This was automatically configured from the service account. 
+     * Kubernetes URL: https://kubernetes.default - This was automatically configured from the service account.
        kubectl cluster-info | grep master
      * Kubernetes Namespace: default - Unless you are running your master in another namespace
      * Credentials: Select the Kubernetes Service Account credentials you created in the previous step
