@@ -5,11 +5,11 @@ For that first need to install **Kubernetes** plugin ((https://plugins.jenkins.i
 
 Lets Check how to setting up the Jenkins agent.
 
-**Create credentials set for the Jenkins master to access the Kubernetes cluster.**
+**Create Secret credentials set for the Jenkins master to access the Kubernetes cluster.**
   1. In the Jenkins UI, click the Credentials link in the left-hand navigation panel
   2. Click on the Jenkins under the Stores scoped to Jenkins.
   3. On the next page select Global Crednetails (unrestricted)
-  4. Click Add CredentialsUnder Kind, specify Kubernetes Service Account
+  4. Click Add Credentials Under Kind, specify Kubernetes Service Account
   5. Leave the scope set to Global
   6. Click OK.
 
@@ -53,14 +53,23 @@ There are at least two ways to configure pod templates – in the **Jenkins UI**
  
  Refer the Image:
  
+ node('jenkins-slave') {
+    
+     stage('Run shell') {
+        echo "Hello World"
+    }
+}
  
 **Configure a Pod Template with Pipeline script** 
-Nodes can be defined in a pipeline and then used, however, default execution always goes to the jnlp container. You will need to specify the container you want to execute your task in.
+
+Any of the configuration parameters available in the UI or in the YAML definition can be added to the podTemplate and containerTemplate sections.
+Nodes can be defined in a pipeline and then used, however, default execution always goes to the jnlp container. You will need to specify the container you want to execute your task in. 
+The default jnlp agent image used can be customized by adding it to the template
 
 Please note the POD_LABEL is a new feature to automatically label the generated pod in versions 1.17.0 or higher, older versions of the Kubernetes Plugin will need to manually label the podTemplate
 
 This will run in jnlp container
-
+```
 podTemplate {
     node(POD_LABEL) {
         stage('Run shell') {
@@ -68,3 +77,176 @@ podTemplate {
         }
     }
 }
+```
+In the example below, I’ve defined a pod with two container templates. Ports in each container can be accessed as in any Kubernetes pod, by using localhost.
+The container statement allows to execute commands directly into each container.
+
+```
+podTemplate(label: 'mypod', containers: [
+    containerTemplate(name: 'git', image: 'alpine/git', ttyEnabled: true, command: 'cat'),
+    containerTemplate(name: 'docker', image: 'docker', command: 'cat', ttyEnabled: true)
+  ],
+  volumes: [
+    hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock'),
+  ]
+  ) {
+    node('mypod') {
+        stage('Clone repository') {
+            container('git') {
+                sh 'git --version'
+            }
+        } 
+        stage('Check running containers') {
+            container('docker') {
+                sh 'docker --version'
+            }
+        }
+      }
+    
+    }
+```
+
+Output of Jenkins UI Method
+```
+Started by user bibin
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Still waiting to schedule task
+‘Jenkins’ doesn’t have label ‘jenkins-slave’
+Agent jenkins-slave-380nq is provisioned from template jenkins-slave
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  labels:
+    jenkins: "slave"
+    jenkins/label: "xjenkins-slave"
+  name: "jenkins-slave-380nq"
+spec:
+  containers:
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "jenkins5000:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "jenkins-slave-380nq"
+    - name: "JENKINS_NAME"
+      value: "jenkins-slave-380nq"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://54.91.140.176:32535/"
+    image: "jenkins/jnlp-slave"
+    imagePullPolicy: "IfNotPresent"
+    name: "jnlp"
+    resources:
+      limits: {}
+      requests: {}
+    tty: true
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+    workingDir: "/home/jenkins/agent"
+  hostNetwork: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on jenkins-slave-380nq in /home/jenkins/agent/workspace/test-jnllp
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Run shell)
+[Pipeline] echo
+Hello World
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+```
+
+
+```
+Started by user bibin
+Running in Durability level: MAX_SURVIVABILITY
+[Pipeline] Start of Pipeline
+[Pipeline] podTemplate
+[Pipeline] {
+[Pipeline] node
+Still waiting to schedule task
+‘Jenkins’ doesn’t have label ‘test_2-2wg9h’
+Created Pod: jenkins/test-2-2wg9h-t0fbr-nj3j5
+[Normal][jenkins/test-2-2wg9h-t0fbr-nj3j5][Scheduled] Successfully assigned jenkins/test-2-2wg9h-t0fbr-nj3j5 to ip-192-168-111-104.ec2.internal
+[Normal][jenkins/test-2-2wg9h-t0fbr-nj3j5][Pulling] Pulling image "jenkins/inbound-agent:4.3-4"
+[Normal][jenkins/test-2-2wg9h-t0fbr-nj3j5][Pulled] Successfully pulled image "jenkins/inbound-agent:4.3-4"
+[Normal][jenkins/test-2-2wg9h-t0fbr-nj3j5][Created] Created container jnlp
+[Normal][jenkins/test-2-2wg9h-t0fbr-nj3j5][Started] Started container jnlp
+Agent test-2-2wg9h-t0fbr-nj3j5 is provisioned from template test_2-2wg9h-t0fbr
+---
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  annotations:
+    buildUrl: "http://54.91.140.176:32535/job/test/2/"
+    runUrl: "job/test/2/"
+  labels:
+    jenkins: "slave"
+    jenkins/label: "test_2-2wg9h"
+  name: "test-2-2wg9h-t0fbr-nj3j5"
+spec:
+  containers:
+  - env:
+    - name: "JENKINS_SECRET"
+      value: "********"
+    - name: "JENKINS_TUNNEL"
+      value: "jenkins5000:50000"
+    - name: "JENKINS_AGENT_NAME"
+      value: "test-2-2wg9h-t0fbr-nj3j5"
+    - name: "JENKINS_NAME"
+      value: "test-2-2wg9h-t0fbr-nj3j5"
+    - name: "JENKINS_AGENT_WORKDIR"
+      value: "/home/jenkins/agent"
+    - name: "JENKINS_URL"
+      value: "http://54.91.140.176:32535/"
+    image: "jenkins/inbound-agent:4.3-4"
+    name: "jnlp"
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+    volumeMounts:
+    - mountPath: "/home/jenkins/agent"
+      name: "workspace-volume"
+      readOnly: false
+  nodeSelector:
+    kubernetes.io/os: "linux"
+  restartPolicy: "Never"
+  volumes:
+  - emptyDir:
+      medium: ""
+    name: "workspace-volume"
+
+Running on test-2-2wg9h-t0fbr-nj3j5 in /home/jenkins/agent/workspace/test
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Run shell)
+[Pipeline] sh
++ echo hello world
+hello world
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] }
+[Pipeline] // podTemplate
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+```
