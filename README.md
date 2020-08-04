@@ -33,21 +33,21 @@ Now that you’ve configured your Jenkins master so that it can access your K8s 
 There are at least two ways to configure pod templates – in the **Jenkins UI** and in your **pipeline script**.
 
 **Configure a Pod Template in the Jenkins UI**
+
  Kubernetes Pod Template section, we need to configure the image that will be used to spin up the agent pod.
  1. In the Jenkins UI, go to Manage Jenkins → Configure System -> Cloud -> Kubernetes ->  
  2. Click the Add Pod Template button and select Kubernetes Pod Template
  3. Enter values for the following parameters:
-   * Name: <your choice>
-   * Namespace: default - unless you configured a different namespace in the previous step
-   * Labels: <your choice> - this will be used to identify the agent pod from your Jenkinsfiles
-   * Usage: Select "Use this node as much as possible" if you would like for this pod to be your default node when no node is specified. Select "Only build jobs with label matching expressions matching this node" to use this pod only when its label is specified in the pipeline script
-   * Containers: The containers you want to launch inside this pod. 
-     * Containers -> Add Containers -> Containers Template
-     * Name: jnlp
-     * Docker Image: jenkins/agent  it will be used as a reference to spin up a new Jenkins slave
-     * Command to run :
-     * Arguments to pass to the command:
-     * Allocate pseudo-TTY: yes
-   *
+    * Name: <your choice>
+    * Namespace: default - unless you configured a different namespace in the previous step
+    * Labels: <your choice> - this will be used to identify the agent pod from your Jenkinsfiles
+    * Usage: Select "Use this node as much as possible" if you would like for this pod to be your default node when no node is specified. Select "Only build jobs with label matching expressions matching this node" to use this pod only when its label is specified in the pipeline script
+    * Containers: The containers you want to launch inside this pod. 
+      * Containers -> Add Containers -> Containers Template
+      * Name: jnlp
+      * Docker Image: jenkins/agent  it will be used as a reference to spin up a new Jenkins slave
+      * Command to run :
+      * Arguments to pass to the command:
+      * Allocate pseudo-TTY: yes
  
  
